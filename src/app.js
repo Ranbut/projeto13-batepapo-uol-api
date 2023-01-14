@@ -7,6 +7,8 @@ server.use(cors());
 
 const PORT = 5000;
 
+const participantes = [];
+
 server.post('/participants', (req, res) => {
     const participante = req.body;
 
