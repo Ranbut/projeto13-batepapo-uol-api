@@ -87,6 +87,64 @@ server.get("/participants", async (req, res)=>{
     }
 });
 
+server.post("/messages", async (req, res)=>{
+    const {to, text, type} = req.body;
+    const from = req.headers.user;
+
+    const participanteExiste = await participantesCollection.findOne({name: from})
+
+    const validation = msgSchema.validate({to, text, type}, {abortEarly: false});
+
+    if(validation.error){
+        const erros = validation.error.details.map((detail) => detail.message);
+
+        res.status(422).send(erros);
+        return;
+    }
+
+    if(!participanteExiste){
+        res.sendStatus(422);
+        return;
+    }
+
+    try{
+        await msgCollection.insertOne({
+            from: from,
+            to,
+            text,
+            type,
+            time: horario
+        });
+        res.sendStatus(201);
+    }catch(err){
+        res.status(500).send(err);
+    }
+});
+
+server.get("/messages", async (req, res) => {
+    const from = req.headers.user;
+    const {limit: limiteMsg} = req.query;
+
+    const listarMsg = await msgCollection.find({$or: [{from: from}, {to: {$in: [from, "Todos"]}},{type: "message"}],}).toArray();
+
+    if(limiteMsg){
+        const numeroLimite = Number(limiteMsg);
+
+        if(numeroLimite <= 0 || isNaN(numeroLimite) ){
+                res.sendStatus(422);
+                return;
+        }
+        res.send(listarMsg.slice(-numeroLimite).reverse());
+        return;
+    }
+
+    try{
+        res.send(listarMsg.reverse());
+    }catch(err){
+        res.status(500).send(err);
+    }
+});
+
 server.listen(PORT, () => {
   console.log(`Servidor iniciado na porta: ${PORT}`);
   console.log(`Use: http://localhost:${PORT}`);
