@@ -150,9 +150,8 @@ server.post("/status", async (req, res) => {
     
     const verifique = await participantesCollection.findOne({name: from});
 
-    if(!verifique){
+    if(!verifique)
         res.sendStatus(404);
-    }
 
     try{
         await participantesCollection.updateOne({name: from},{$set: {lastStatus: Date.now()}});
@@ -168,7 +167,7 @@ setInterval(async() => {
     try{
         const arr = await participantesCollection.find({lastStatus: {$lte: diferenca}}).toArray();
 
-    
+
         if(arr.length > 0){
             const msgSelecionada = arr.map((usuario) =>{
                         return{
@@ -183,9 +182,8 @@ setInterval(async() => {
             await participantesCollection.deleteMany({lastStatus: {$lte: diferenca}});
 
         }
-    }catch(err){console.log(err);}
+    }catch(err){console.log("Erro na conexão do servidor!", error);}
 },15000);
-
 
 server.listen(PORT, () => {
   console.log(`Servidor iniciado na porta: ${PORT}`);
