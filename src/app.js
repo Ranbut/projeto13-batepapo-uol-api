@@ -145,6 +145,23 @@ server.get("/messages", async (req, res) => {
     }
 });
 
+server.post("/status", async (req, res) => {
+    const from = req.headers.user;
+    
+    const verifique = await participantesCollection.findOne({name: from});
+
+    if(!verifique){
+        res.sendStatus(404);
+    }
+
+    try{
+        await participantesCollection.updateOne({name: from},{$set: {lastStatus: Date.now()}});
+        res.sendStatus(200);
+    }catch(err){
+        res.status(500).send(err);
+    }
+});
+
 server.listen(PORT, () => {
   console.log(`Servidor iniciado na porta: ${PORT}`);
   console.log(`Use: http://localhost:${PORT}`);
