@@ -162,6 +162,31 @@ server.post("/status", async (req, res) => {
     }
 });
 
+setInterval(async() => {
+    const diferenca = Date.now() - 1000;
+
+    try{
+        const arr = await participantesCollection.find({lastStatus: {$lte: diferenca}}).toArray();
+
+    
+        if(arr.length > 0){
+            const msgSelecionada = arr.map((usuario) =>{
+                        return{
+                            from: usuario.name,
+                            to: "Todos",
+                            text: "sai da sala...",
+                            type: "status",
+                            time: horario
+                        }
+            });
+            await msgCollection.insertMany(msgSelecionada);
+            await participantesCollection.deleteMany({lastStatus: {$lte: diferenca}});
+
+        }
+    }catch(err){console.log(err);}
+},15000);
+
+
 server.listen(PORT, () => {
   console.log(`Servidor iniciado na porta: ${PORT}`);
   console.log(`Use: http://localhost:${PORT}`);
