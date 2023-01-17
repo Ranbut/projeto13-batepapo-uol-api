@@ -12,7 +12,6 @@ server.use(cors());
 
 const PORT = 5000;
 
-
 const participantesSchema = joi.object({
     name: joi.string().required()
 });
